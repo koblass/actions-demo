@@ -1,8 +1,30 @@
-on: [push]
+name: Greetings
+
+on:
+  pull_request:
+    types:
+      - opened
+  issues:
+    types:
+      - opened
+
+permissions:
+  issues: write
+  pull-requests: write
+
 jobs:
-  build:
+  greeting:
+    name: Greet First-Time Contributors
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - uses: actions/first-interaction@v3
+        with:
+          issue-message: |
+            # Issue Message with Markdown
+
+            This is the message that will be displayed!
+          pr-message: |
+            # PR Message with Markdown
+
+            This is the message that will be displayed!
