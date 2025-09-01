@@ -33,7 +33,7 @@ jobs:
       run: mvn -B package --file pom.xml
     - name: Run Code Quality Action
       id: checkstyle
-      uses: ./.github/actions/java-code-quality.yml
+      uses: ./.github/actions/java-code-quality
       with:
         working-directory: java-app
     - run: mkdir staging && cp target/*.jar staging
