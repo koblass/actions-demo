@@ -2,13 +2,22 @@ name: Build Java App
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
+    paths:
+      - java-app/**
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    defaults:
+      run:
+        # Set the working directory to the java-app directory
+        # works only for the shell.
+        working-directory: java-app
 
     steps:
     - name: Checkout code
@@ -19,25 +28,16 @@ jobs:
       with:
         java-version: '21'
         distribution: 'temurin'
-
-    - name: Cache Maven dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
-
+        cache: maven
     - name: Build with Maven
-      run: |
-        cd java-app
-        ./mvnw clean compile
-
-    - name: Run tests
-      run: |
-        cd java-app
-        ./mvnw test
-
-    - name: Package application
-      run: |
-        cd java-app
-        ./mvnw package
+      run: mvn -B package --file pom.xml
+    - run: mkdir staging && cp target/*.jar staging
+    # Upload the build artifact
+    - uses: actions/upload-artifact@v4
+      with:
+        name: Package
+        path: staging
+    - name: Publish to GitHub Packages
+      run: mvn --batch-mode deploy
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
